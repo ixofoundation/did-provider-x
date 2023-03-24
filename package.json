@@ -1,14 +1,14 @@
 {
-  "name": "@cheqd/did-provider-cheqd",
-  "version": "3.0.4",
-  "description": "Veramo SDK plugin for the did:cheqd DID method",
+  "name": "@ixo/did-provider-x",
+  "version": "1.0.0",
+  "description": "Veramo SDK plugin for the did:x DID method",
   "license": "Apache-2.0",
-  "author": "Cheqd Foundation Limited (https://github.com/cheqd)",
-  "repository": "https://github.com/cheqd/did-provider-cheqd.git",
+  "author": "Ixo <ixo>",
+  "repository": "https://github.com/ixofoundation/did-provider-x.git",
   "bugs": {
-    "url": "https://github.com/cheqd/did-provider-cheqd/issues"
+    "url": "https://github.com/ixofoundation/did-provider-x/issues"
   },
-  "homepage": "https://github.com/cheqd/did-provider-cheqd#readme",
+  "homepage": "https://github.com/ixofoundation/did-provider-x#readme",
   "source": "src/index.ts",
   "main": "build/esm/index.js",
   "types": "build/types/index.d.ts",

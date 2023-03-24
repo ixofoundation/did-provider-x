@@ -5,6 +5,6 @@ description: >-
 
 # Notice
 
-Copyright 2021-2022 Cheqd Foundation Limited
+Copyright 2023 Ixo
 
-This product includes software developed at Cheqd Foundation Limited, doing business as "cheqd"
+This product includes software developed at Ixo
