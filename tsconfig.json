@@ -1,18 +1,13 @@
 {
-  "compilerOptions": {
-    "strict": true,
-    "preserveConstEnums": true,
-    "sourceMap": true,
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "downlevelIteration": true,
-    "declarationMap": true,
-    "declaration": true,
-    "composite": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "rootDir": "src",
-  },
-  "exclude": ["**/__tests__/**/*", "**/build/**/*"],
-  "include": ["src/**/*"],
+	"compilerOptions": {
+		"declaration": true,
+		"declarationDir": "./types",
+		"emitDeclarationOnly": true,
+		"isolatedModules": true,
+		"esModuleInterop": true,
+		"allowJs": true,
+		"lib": ["es2015"]
+	},
+	"include": ["src/**/*"],
+	"exclude": ["node_modules"]
 }
