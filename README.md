@@ -1,66 +1,114 @@
-# Veramo SDK plugin for x/ixo DID method
+# @ixo/did-provider-x
 
-## ℹ️ Overview
+A [Veramo](https://veramo.io/) / [`did-resolver`](https://github.com/decentralized-identity/did-resolver) plugin that resolves **`did:ixo`** (and the legacy **`did:x`**) DID methods against the ixo DID resolver service.
 
-The purpose of this [`@ixo/did-provider-x` NPM package](https://www.npmjs.com/package/@ixo/did-provider-x) is to enable developers to interact with the ixo ledger using [Veramo SDK](https://veramo.io/), a modular and pluggable client app SDK for decentralised identity and SSI applications.
+It returns resolver functions you can plug into a `did-resolver` `Resolver` or a Veramo `DIDResolverPlugin`, so DID documents (and their JSON-LD `@context`, required for verifiable-credential verification) resolve correctly.
 
-This package includes [Veramo SDK Agent methods](https://veramo.io/docs/veramo_agent/plugins) for use with the [Veramo CLI NPM package](https://www.npmjs.com/package/@veramo/cli). It can also be consumed as an NPM package outside Veramo CLI for building your own applications with NPM.
-
-The package's core functionality is borrowed from [Veramo Core NPM package](https://www.npmjs.com/package/@veramo/core) and extends this to include ixo ledger functionality, such as creating and managing DIDs.
-
-## 🧑‍💻🛠 Quick Start
-
-These quick start steps provide the _minimal_ configuration that you need to set Veramo CLI for use with ixo.
-
-### 1. Install Veramo CLI and clone this repo
-
-This step is exactly [as described in Veramo CLI docs](https://veramo.io/docs/veramo_agent/cli_tool/):
+## Install
 
 ```bash
-npm install -g @veramo/cli@latest
-git clone https://github.com/ixofoundation/did-provider-x.git
-npm install
+npm install @ixo/did-provider-x
+# or
+yarn add @ixo/did-provider-x
 ```
 
-### 2. Generate a new local database encryption key
+## Usage
 
-By default, the `did-provider-x` package has a default SQLite database password, but it's a good idea to modify and change this to a new key unique to your install.
+### With `did-resolver`
+
+`getResolver(options?)` returns a method → resolver map for `ixo` and `x`:
+
+```typescript
+import { Resolver } from "did-resolver";
+import { getResolver } from "@ixo/did-provider-x";
+
+const resolver = new Resolver({
+  ...getResolver(), // resolves did:ixo and did:x
+});
+
+const result = await resolver.resolve(
+  "did:ixo:entity:54bede0aced5282b2401c58a048a731a"
+);
+console.log(result.didDocument);
+```
+
+Point it at a specific network's resolver with the `url` option:
+
+```typescript
+const resolver = new Resolver({
+  ...getResolver({ url: "https://resolver.devnet.ixo.earth/1.0/identifiers/" }),
+});
+```
+
+### With a Veramo agent
+
+```typescript
+import { createAgent, IResolver } from "@veramo/core";
+import { DIDResolverPlugin } from "@veramo/did-resolver";
+import { Resolver } from "did-resolver";
+import { getResolver } from "@ixo/did-provider-x";
+
+const agent = createAgent<IResolver>({
+  plugins: [
+    new DIDResolverPlugin({
+      resolver: new Resolver({ ...getResolver() }),
+    }),
+  ],
+});
+
+await agent.resolveDid({
+  didUrl: "did:ixo:entity:54bede0aced5282b2401c58a048a731a",
+});
+```
+
+### Universal-resolver helpers
+
+For resolving other DID methods through a [Universal Resolver](https://github.com/decentralized-identity/universal-resolver) instance:
+
+```typescript
+import {
+  getUniversalResolver,
+  getUniversalResolverFor,
+} from "@ixo/did-provider-x";
+
+// a single resolver for any method the universal resolver supports
+const uni = getUniversalResolver();
+
+// or map specific methods
+const resolver = new Resolver({
+  ...getUniversalResolverFor(["web", "key", "elem"]),
+});
+```
+
+## API
+
+| Export | Description |
+| --- | --- |
+| `getResolver(options?)` | Returns `{ ixo, x }` `DIDResolver`s for the ixo DID methods. |
+| `IxoDidResolver` | Class form of the above (`new IxoDidResolver(options).build()`). |
+| `getUniversalResolver(url?)` | A single `DIDResolver` backed by a universal resolver instance. |
+| `getUniversalResolverFor(methods, url?)` | Maps the given DID methods to a universal resolver. |
+
+`options.url` (and the `url` argument) is the base URL of a DID resolver endpoint, ending in `/1.0/identifiers/`. It defaults to `https://resolver.ixo.world/1.0/identifiers/`.
+
+The resolvers request the JSON-LD DID representation (`Accept: application/did+ld+json`), so resolved documents include their `@context` — required for JSON-LD verifiable-credential verification.
+
+## ixo network endpoints
+
+| Network | RPC | DID resolver |
+| --- | --- | --- |
+| mainnet | `https://impacthub.ixo.world/rpc/` | `https://resolver.ixo.world/1.0/identifiers/` |
+| testnet | `https://testnet.ixo.earth/rpc/` | `https://resolver.testnet.ixo.earth/1.0/identifiers/` |
+| devnet | `https://devnet.ixo.earth/rpc/` | `https://resolver.devnet.ixo.earth/1.0/identifiers/` |
+
+## Development
 
 ```bash
-$ veramo config gen-key
-
-X25519 raw private key (hex encoded):
-
-4a5aeb56c7956dd6f3312e7094130a03afc060b95621fa3a86577aaf2b67cc1d
-
-You can use this key with @veramo/kms-local#SecretBox
-# or replace the default agent.yml 'dbEncryptionKey' constant
+yarn install
+yarn build      # build the main (CommonJS) and module (ESM) outputs
+yarn build:ts   # emit type declarations
 ```
 
-<!-- Take the key generated and replace the value under `dbEncryptionKey` in the [`agent.yml`](https://github.com/ixofoundation/did-provider-x/blob/main/agent.yml) file. -->
+## License
 
-### 3. Configure your ixo/Cosmos account keys and RPC endpoints
-
-Configure the following properties under the `didManager` section:
-
-1. `cosmosPayerMnemonic`: Mnemonic associated with your ixo/Comsos SDK account<!-- (https://docs.cheqd.io/node/docs/cheqd-cli/cheqd-cli-key-management)-->. This is only stored locally, and the mnemonic is used to reconstitute the account address and keys used to pay for the transaction.
-2. `rpcUrl`: You can specify a Cosmos SDK RPC endpoint. This endpoint is where transactions are sent to. By default, this is populated with `juno-rpc.polkachu.com` (for _mainnet_) and `testnet.ixo.earth/rpc` (for _testnet_) and `devnet.ixo.earth/rpc` (for _devnet_), but you can can modify this to [a different hosted RPC endpoint for ixo](https://cosmos.directory/ixo/nodes) or even your own local/private RPC endpoint.
-3. `defaultProvider` (optional): The default ixo network is set to `testnet` to allow developers to test out network functionality. However, if you prefer, you can switch this out to `mainnet` or `devnet` instead.
-
-### 4. Verify your configuration file is correct
-
-IMPORTANT: Not possible at the moment as the package only has functionality for resolver and base provider implementation without creating own agent.
-
-Once you've completed the steps above, verify that your Veramo configuration is accurate using the following command. If your configuration is correct, you should get a success message like the one below.
-
-```bash
-$ veramo config check -f <path/to/>agent.yml
-
-Your Veramo configuration seems fine. An agent can be created and the 'agent.execute()' method can be called on it.
-```
-
-## 🙋 Find us here
-
-[![Discord](https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.com/invite/ixo) [![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/ixonetwork)
-[![Twitter](https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](https://twitter.com/ixoworld)
-[![Medium](https://img.shields.io/badge/Medium-12100E?style=for-the-badge&logo=medium&logoColor=white)](https://medium.com/ixo-blog)
+Apache-2.0

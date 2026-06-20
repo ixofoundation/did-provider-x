@@ -43,7 +43,14 @@ export class IxoDidResolver {
   ): Promise<DIDResolutionResult> {
     try {
       const result = await axios.get(this.resolverUrl + did, {
-        headers: { "Content-Type": "application/did+json" },
+        // Request the JSON-LD DID representation explicitly. did:ixo documents
+        // are JSON-LD, and downstream consumers (e.g. Veramo LD credential
+        // verification) need the document's `@context` to expand terms like
+        // `assertionMethod`/`controller`. Without an explicit Accept, axios
+        // sends its default `application/json, text/plain, */*`, which a
+        // spec-compliant resolver may serve as the contextless DID JSON
+        // representation — breaking JSON-LD verification.
+        headers: { Accept: "application/did+ld+json" },
       });
       const ddo = result.data as DIDResolutionResult;
       return ddo;

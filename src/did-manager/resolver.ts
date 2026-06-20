@@ -42,7 +42,12 @@ export function getUniversalResolver(
   const resolve: DIDResolver = async (didUrl: string): Promise<any> => {
     try {
       const result = await axios.get(url + didUrl, {
-        headers: { "Content-Type": "application/did+ld+json" },
+        // Request the JSON-LD DID representation so resolved documents include
+        // their `@context` (needed for JSON-LD credential verification). This
+        // must be an Accept header — a Content-Type on a GET is ignored, leaving
+        // axios's default `application/json` Accept, which a spec-compliant
+        // resolver may answer with the contextless DID JSON representation.
+        headers: { Accept: "application/did+ld+json" },
       });
       return result.data;
     } catch (e) {
