@@ -1,6 +1,6 @@
 {
   "name": "@ixo/did-provider-x",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Veramo SDK plugin for the did:x/ixo DID method",
   "license": "Apache-2.0",
   "author": "Ixo <ixo>",
@@ -46,9 +46,6 @@
   },
   "dependencies": {
     "@babel/runtime": "7.29.7",
-    "@cosmjs/crypto": "0.39.0",
-    "@veramo/core": "7.0.0",
-    "@veramo/did-manager": "7.0.0",
     "axios": "1.18.0",
     "did-resolver": "5.0.1"
   },
